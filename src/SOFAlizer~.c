@@ -52,7 +52,7 @@ static void SOFAlizer_tilde_open (t_SOFAlizer_tilde *x, t_symbol *filenameArg)
     strcpy(x->filename, filenameArg->s_name);   
     if (x->filename[0] == '\0')
     {				
-        error("No SOFA file has been specified. \n");
+        pd_error(x, "No SOFA file has been specified. \n");
         return;
     }
     else 
@@ -72,7 +72,7 @@ static void SOFAlizer_tilde_open (t_SOFAlizer_tilde *x, t_symbol *filenameArg)
     file = fopen(completFilename, "r");
     if (file == NULL)
     {
-        error("SOFA file %s couldn't be opened. \n", x->filename);
+        pd_error(x, "SOFA file %s couldn't be opened. \n", x->filename);
         return;
     }
     fclose(file);
@@ -82,7 +82,7 @@ static void SOFAlizer_tilde_open (t_SOFAlizer_tilde *x, t_symbol *filenameArg)
     x->sofa = mysofa_open(completFilename, sys_getsr(), &filter_length, &err);	 
     if(x->sofa == NULL) 
     {												
-        error("SOFA file %s couldn't be opened. \n", x->filename);
+        pd_error(x, "SOFA file %s couldn't be opened. \n", x->filename);
         return;
     }
 	
@@ -116,7 +116,7 @@ static void SOFAlizer_tilde_open (t_SOFAlizer_tilde *x, t_symbol *filenameArg)
         delay = x->sofa->hrtf->DataDelay.values[i];
         if (delay != 0.0)
         {							
-            error("Warning: This SOFA file will be processed incorrectly besause of non zero IR delays! \n"); 
+            pd_error(x, "Warning: This SOFA file will be processed incorrectly besause of non zero IR delays! \n"); 
         }
     }
 }
