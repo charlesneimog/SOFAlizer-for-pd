@@ -4,9 +4,7 @@ on:
    
 
 jobs:  
-  # ==============================================================================
-  # =                               WINDOWS                                      =
-  # ==============================================================================
+  # ===============================================
   windows-build:
     runs-on: windows-latest
     timeout-minutes: 15
@@ -15,37 +13,36 @@ jobs:
       with:
         submodules: recursive
         fetch-depth: 0
-
     - if: runner.os == 'Windows'
       name: "Install mingw deps"
       uses: msys2/setup-msys2@v2
       with:
           install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-cunit
           update: false
-
     - name: Download PureData
       run: choco install puredata --yes
-        
     - if: runner.os == 'Windows'
-      name: Build py4pd
+      name: Build 
       shell: msys2 {0}
       run: |
         make extension=m_amd64 
         make extension=m_amd64 localdep_windows
-    
+    - if: runner.os == 'Windows'
+      name: Create Object Folder
+      shell: msys2 {0}
+      run: |
+        mkdir SOFAlizer~
+        cp SOFAlizer~.m_amd64 SOFAlizer~
     - name: Upload Object 
       uses: actions/upload-artifact@v3
       with:
         name: SOFAlizer~
-        path: .
+        path: SOFAlizer~
 
-  # ==============================================================================
-  # =                               MAC ARM                                      =
-  # ==============================================================================
+  # ======================================================
   macos-build:
     runs-on: macos-latest
     timeout-minutes: 15
-
     steps:
     - uses: actions/checkout@v3
       with:
@@ -62,17 +59,18 @@ jobs:
         make extension=d_amd64
         make extension=d_amd64 localdep_macos
 
+    - name: Create Object Folder
+      run: |
+        mkdir SOFAlizer~
+        cp SOFAlizer~.d_amd64 SOFAlizer~
+
     - name: Upload Object
       uses: actions/upload-artifact@v3
       with:
         name: SOFAlizer~
-        path: ./
+        path: SOFAlizer~
 
-
-  # ==============================================================================
-  # =                               LINUX                                        =
-  # ==============================================================================
-
+  # ======================================================
   linux-build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -89,16 +87,23 @@ jobs:
           sudo apt install puredata -y
           sudo apt install libcunit1 libcunit1-dev
 
-
       - name: Build
         run: |
           make PDINCLUDEDIR=./pure-data/src/ extension=l_amd64 
           make extension=l_amd64 localdep_linux
-
           
+      - name: Create Object Folder
+        run: |
+          mkdir SOFAlizer~
+          cp -r resources SOFAlizer~
+          cp -r src SOFAlizer~
+          cp -r amd64 SOFAlizer~
+          cp SOFAlizer~-help.pd SOFAlizer~
+          cp SOFAlizer~.l_amd64 SOFAlizer~
+
       - name: Upload Object
         uses: actions/upload-artifact@v3
         with:
           name: SOFAlizer~
-          path: ./
+          path: SOFAlizer~
 
