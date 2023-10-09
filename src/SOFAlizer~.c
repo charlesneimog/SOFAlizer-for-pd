@@ -29,6 +29,7 @@ typedef struct _SOFAlizer_tilde     /* Data space of pd external */
     t_outlet *left_channel;         /* Outlet of left audio channel  */
     t_outlet *right_channel;        /* Outlet of right audio channel */
     t_inlet *filenameIn;            /* Inlet to pass SOFA filename into pd external */
+    t_canvas *canvas;               /* pointer to the canvas */
     t_float azimuth;                /* Store azimuth angle from inlet */
     t_float elevation;              /* Store elevation angle from inlet */
     struct MYSOFA_EASY *sofa;       /* Struct to import SOFA files */
@@ -59,9 +60,26 @@ static void SOFAlizer_tilde_open (t_SOFAlizer_tilde *x, t_symbol *filenameArg)
         post("SOFA file %s will be opened.. \n ", x->filename);
     }
 	
+    t_symbol *patch_dir = canvas_getdir(x->canvas);
+    // concat patch_dir with x->filename
+    char completFilename[MAXPDSTRING];
+    strcpy(completFilename, patch_dir->s_name);
+    strcat(completFilename, "/");
+    strcat(completFilename, x->filename);
+
+    // check if completFilename exists
+    FILE *file;
+    file = fopen(completFilename, "r");
+    if (file == NULL)
+    {
+        error("SOFA file %s couldn't be opened. \n", x->filename);
+        return;
+    }
+    fclose(file);
+
     /* Function call from SOFA API to import SOFA file into struct x->sofa */
     int filter_length, err;											
-    x->sofa = mysofa_open(x->filename, 44100, &filter_length, &err);	 
+    x->sofa = mysofa_open(completFilename, sys_getsr(), &filter_length, &err);	 
     if(x->sofa == NULL) 
     {												
         error("SOFA file %s couldn't be opened. \n", x->filename);
@@ -72,7 +90,6 @@ static void SOFAlizer_tilde_open (t_SOFAlizer_tilde *x, t_symbol *filenameArg)
     x->N = x->sofa->hrtf->N;	/* Numer of samples per HRTF*/
     x->R = x->sofa->hrtf->R;	/* Number of receivers */
 	
-
     post("	Metadata: \n		File name: %s \n		Name of database: %s \n		Title: %s \n		Short name: %s \n		Sample rate: %u Hz \n		Number of HRTF sets: %u",
                          x->filename,
                          mysofa_getAttribute(x->sofa->hrtf->attributes, "DatabaseName"),	
@@ -113,18 +130,18 @@ static void *SOFAlizer_tilde_new(t_symbol *filenameArg, t_float lenArg)
     t_SOFAlizer_tilde *x = (t_SOFAlizer_tilde *)pd_new(SOFAlizer_tilde_class); 
     
     /* Create inlets and outlets */
-    x->filenameIn = inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_symbol, gensym("open"));
+    // x->filenameIn = inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_symbol, gensym("open"));
     floatinlet_new(&x->x_obj, &x->azimuth);						   
     floatinlet_new(&x->x_obj, &x->elevation);						
     x->left_channel = outlet_new(&x->x_obj, gensym("signal"));  
     x->right_channel = outlet_new(&x->x_obj, gensym("signal")); 
-	
     if (lenArg == 0)
     {
         lenArg = 128;       /* Standard defined filter length is 128 */ 
     }
     x->len = lenArg;        /* User defined filter length */
-	
+    x->canvas = canvas_getcurrent();      
+
     post("SOFAlizer~: Interactive, binaural real-time syntheses with HRTF sets provided from a SOFA file. \n");
     
     /* Open SOFA file */
@@ -219,7 +236,7 @@ static void SOFAlizer_tilde_dsp(t_SOFAlizer_tilde *x, t_signal **sp)
 void SOFAlizer_tilde_free(t_SOFAlizer_tilde *x)
 {
     mysofa_close(x->sofa);	
-    mysofa_lookup_free(x->sofa->lookup);
+    // mysofa_lookup_free(x->sofa->lookup); BUG: This crashes PD
 }
 
 
