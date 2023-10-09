@@ -1,11 +1,17 @@
 lib.name = SOFAlizer~
 
+uname := $(shell uname -s)
+
 .PHONY: all libmysofa 
 all: libmysofa 
 
 # Add a new target to build libsms
 libmysofa:
-	cd ./libmysofa && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . 
+	cd ./libmysofa && mkdir -p build && cd build && cmake -DBUILD_TESTS=OFF -DBUILD_STATIC_LIBS=OFF -DCODE_COVERAGE=OFF -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+
+ifeq (MINGW,$(findstring MINGW,$(uname)))
+	cp ./libmysofa/build/src/libmysofa.dll .
+endif
 
 class.sources = src/SOFAlizer~.c
 cflags += -Wno-cast-function-type
