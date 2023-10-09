@@ -12,11 +12,9 @@ verbose=0
 include_paths=
 exclude_paths=
 
-
-
 #default exclude/include paths
 exclude_paths="*/libc.so.*:*/libarmmem.*.so.*:*/libdl.so.*:*/libglib-.*.so.*:*/libgomp.so.*:*/libgthread.*.so.*:*/libm.so.*:*/libpthread.*.so.*:*/libpthread.so.*:*/libstdc++.so.*:*/libgcc_s.so.*:*/libz.so.*"
-include_paths="/*"
+include_paths="*/"
 
 # UTILITIES
 if [ -e "${0%/*}/localdeps.utilities.source" ]; then
@@ -48,16 +46,11 @@ check_binaries() {
     done
 }
 
-
 normalize_path() {
-    # normalize a path specification, e.g. on Windows turn C:\Foo\Bar\ into /c/foo/bar/"
-    # on most system this doesn't do anything, but override it to your needs...
-    # e.g. on Windows use: ${CYGPATH} "$1" | tr "[A-Z]" "[a-z]"
     echo "$1"
 }
 
 list_dirs() {
-    #
     local IN="$@"
     local iter
     while [ "$IN" ] ;do
@@ -90,21 +83,16 @@ check_includedep() {
     local path=$(normalize_path "$1")
     local p
     local result=0
-    # exclude non-existing files
     if [ ! -e "${path}" ]; then
 	return 0
     fi
-
-    # skip paths that match one of the patterns in ${exclude_paths}
     if check_in_path "${path}" "${exclude_paths}"; then
 	return 1
     fi
-    # only include paths that match one of the patterns in ${include_paths}
     if check_in_path "${path}" "${include_paths}"; then
 	echo "${path}"
 	return 0
     fi
-    # skip the rest
     return 1
 }
 
@@ -119,7 +107,6 @@ usage: $0 [-I <includepath>] [-X <excludepath>] <binary> [<binary2> ...]
   -q: lower verbosity
 
 EOF
-
     case "$0" in
         *win*)
             cat >/dev/stderr <<EOF

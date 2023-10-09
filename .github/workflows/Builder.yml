@@ -26,6 +26,7 @@ jobs:
       shell: msys2 {0}
       run: |
         make extension=m_amd64 
+        make extension=m_amd64 localdep_windows
     - if: runner.os == 'Windows'
       name: Create Object Folder
       shell: msys2 {0}
@@ -33,6 +34,7 @@ jobs:
         mkdir SOFAlizer~
         cp SOFAlizer~.m_amd64 SOFAlizer~
         cp libmysofa.dll SOFAlizer~
+        cp -r amd64 SOFAlizer~/amd64
       continue-on-error: true
         
     - name: Upload Object 
@@ -65,6 +67,7 @@ jobs:
       run: |
         mkdir SOFAlizer~
         cp SOFAlizer~.d_amd64 SOFAlizer~
+        cp -r amd64 SOFAlizer~/amd64
 
     - name: Upload Object
       uses: actions/upload-artifact@v3
@@ -91,7 +94,7 @@ jobs:
 
       - name: Build
         run: |
-          make PDINCLUDEDIR=./pure-data/src/ extension=l_amd64 
+          make extension=l_amd64 
           make extension=l_amd64 localdep_linux
           
       - name: Create Object Folder
