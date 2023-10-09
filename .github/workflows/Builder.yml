@@ -1,0 +1,104 @@
+name: Builder
+on:    
+  workflow_dispatch:
+   
+
+jobs:  
+  # ==============================================================================
+  # =                               WINDOWS                                      =
+  # ==============================================================================
+  windows-build:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - if: runner.os == 'Windows'
+      name: "Install mingw deps"
+      uses: msys2/setup-msys2@v2
+      with:
+          install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-cunit
+          update: false
+
+    - name: Download PureData
+      run: choco install puredata --yes
+        
+    - if: runner.os == 'Windows'
+      name: Build py4pd
+      shell: msys2 {0}
+      run: |
+        make extension=m_amd64 
+        make extension=m_amd64 localdep_windows
+    
+    - name: Upload Object 
+      uses: actions/upload-artifact@v3
+      with:
+        name: SOFAlizer~
+        path: .
+
+  # ==============================================================================
+  # =                               MAC ARM                                      =
+  # ==============================================================================
+  macos-build:
+    runs-on: macos-latest
+    timeout-minutes: 15
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Install PureData
+      run: |
+        brew install --cask pd
+        brew install cunit
+
+    - name: Build
+      run: | 
+        make extension=d_amd64
+        make extension=d_amd64 localdep_macos
+
+    - name: Upload Object
+      uses: actions/upload-artifact@v3
+      with:
+        name: SOFAlizer~
+        path: ./
+
+
+  # ==============================================================================
+  # =                               LINUX                                        =
+  # ==============================================================================
+
+  linux-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+  
+      - name: Install PureData
+        run: |
+          sudo add-apt-repository ppa:pure-data/pure-data
+          sudo apt update
+          sudo apt install puredata -y
+          sudo apt install libcunit1 libcunit1-dev
+
+
+      - name: Build
+        run: |
+          make PDINCLUDEDIR=./pure-data/src/ extension=l_amd64 
+          make extension=l_amd64 localdep_linux
+
+          
+      - name: Upload Object
+        uses: actions/upload-artifact@v3
+        with:
+          name: SOFAlizer~
+          path: ./
+
