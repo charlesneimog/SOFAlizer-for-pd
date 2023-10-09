@@ -27,7 +27,7 @@
 #X msg 4 148 open resources/Lament.wav;
 #X obj 4 375 dac~, f 41;
 #X obj 4 94 loadbang;
-#N canvas 131 169 677 661 circle 1;
+#N canvas 301 118 677 661 circle 0;
 #X obj 62 126 line, f 10;
 #X obj 88 192 line, f 10;
 #X obj 26 9 inlet;

@@ -95,7 +95,7 @@ jobs:
       - name: Build
         run: |
           make extension=l_amd64 
-          make extension=l_amd64 localdep_linux
+          python resources/localdeps/localdeps.py -o SOFAlizer\~.l_amd64 -i ./libmysofa/build/src
           
       - name: Create Object Folder
         run: |
