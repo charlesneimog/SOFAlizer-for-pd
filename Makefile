@@ -20,10 +20,13 @@ PDLIBBUILDER_DIR=./pd-lib-builder
 include $(PDLIBBUILDER_DIR)/Makefile.pdlibbuilder
 
 localdep_linux: 
+	resources/localdeps/localdeps.linux.sh -I ./libmysofa/build/src
 	resources/localdeps/localdeps.linux.sh "./SOFAlizer~.${extension}"
 
 localdep_windows: 
+	resources/localdeps/localdeps.win.sh -I ./libmysofa/build/src
 	resources/localdeps/localdeps.win.sh "./SOFAlizer~.${extension}"
 
 localdep_macos: 
+	resources/localdeps/localdeps.macos.sh -I ./libmysofa/build/src
 	resources/localdeps/localdeps.macos.sh "./SOFAlizer~.${extension}"

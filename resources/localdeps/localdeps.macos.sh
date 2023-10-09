@@ -6,7 +6,7 @@
 ## usage: $0 <binary> [<binary2>...]
 
 #default exclude/include paths
-#exclude_paths="/usr/lib/*:/System/Library/Frameworks/*"
+exclude_paths="/usr/lib/*:/System/Library/Frameworks/*"
 include_paths="/*"
 recursion=false
 

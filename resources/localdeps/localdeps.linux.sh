@@ -15,7 +15,7 @@ exclude_paths=
 
 
 #default exclude/include paths
-#exclude_paths="*/libc.so.*:*/libarmmem.*.so.*:*/libdl.so.*:*/libglib-.*.so.*:*/libgomp.so.*:*/libgthread.*.so.*:*/libm.so.*:*/libpthread.*.so.*:*/libpthread.so.*:*/libstdc++.so.*:*/libgcc_s.so.*:*/libz.so.*"
+exclude_paths="*/libc.so.*:*/libarmmem.*.so.*:*/libdl.so.*:*/libglib-.*.so.*:*/libgomp.so.*:*/libgthread.*.so.*:*/libm.so.*:*/libpthread.*.so.*:*/libpthread.so.*:*/libstdc++.so.*:*/libgcc_s.so.*:*/libz.so.*"
 include_paths="/*"
 
 # UTILITIES
@@ -250,11 +250,7 @@ install_deps () {
             patchelf --set-rpath \$ORIGIN "${outfile}"
         fi
     done
-    # remove ./ of ${arch}
-    local archdir
-    archdir=$(echo "${arch}" | sed -e 's|^\.*/||')
-    error "NEW ARCHDIR: ${archdir}"
-    patchelf --set-rpath \$ORIGIN/amd64 "${1}"
+    patchelf --set-rpath \$ORIGIN/${arch} "${1}"
 }
 
 
