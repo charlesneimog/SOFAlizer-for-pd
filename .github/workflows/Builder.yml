@@ -17,24 +17,29 @@ jobs:
       name: "Install mingw deps"
       uses: msys2/setup-msys2@v2
       with:
-          install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-cunit mingw-w64-x86_64-ntldd
+          install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-cunit mingw-w64-x86_64-ntldd mingw-w64-x86_64-python
+
           update: false
     - name: Download PureData
       run: choco install puredata --yes
+    
     - if: runner.os == 'Windows'
       name: Build 
       shell: msys2 {0}
       run: |
         make extension=m_amd64 
-        make extension=m_amd64 localdep_windows
+        ls -l
+
     - if: runner.os == 'Windows'
       name: Create Object Folder
       shell: msys2 {0}
       run: |
+        python resources/localdeps/localdeps.py -o SOFAlizer~.dll -i ./libmysofa/build/src
         mkdir SOFAlizer~
+        cp *.dll SOFAlizer~
         cp SOFAlizer~.m_amd64 SOFAlizer~
         cp libmysofa.dll SOFAlizer~
-        cp -r amd64 SOFAlizer~/amd64
+
       continue-on-error: true
         
     - name: Upload Object 
