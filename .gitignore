@@ -4,3 +4,4 @@
 *.o
 amd64/
 *.l_amd64
+build/
