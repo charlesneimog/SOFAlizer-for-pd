@@ -1,85 +1,70 @@
 name: Builder
-on:    
+on:
   workflow_dispatch:
-   
-
-jobs:  
+jobs:
   # ===============================================
   windows-build:
     runs-on: windows-latest
     timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          - {sys: mingw64, env: x86_64}
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-        fetch-depth: 0
-    - if: runner.os == 'Windows'
-      name: "Install mingw deps"
-      uses: msys2/setup-msys2@v2
-      with:
-          install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-cunit mingw-w64-x86_64-ntldd mingw-w64-x86_64-python
-
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - if: runner.os == 'Windows'
+        name: "Install mingw deps"
+        uses: msys2/setup-msys2@v2
+        with:
+          install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-cunit mingw-w64-x86_64-python
           update: false
-    - name: Download PureData
-      run: choco install puredata --yes
-    
-    - if: runner.os == 'Windows'
-      name: Build 
-      shell: msys2 {0}
-      run: |
-        make extension=m_amd64 
-        ls -l
-
-    - if: runner.os == 'Windows'
-      name: Create Object Folder
-      shell: msys2 {0}
-      run: |
-        python resources/localdeps/localdeps.py -o SOFAlizer~.dll -i ./libmysofa/build/src
-        mkdir SOFAlizer~
-        cp *.dll SOFAlizer~
-        cp SOFAlizer~.m_amd64 SOFAlizer~
-        cp libmysofa.dll SOFAlizer~
-
-      continue-on-error: true
-        
-    - name: Upload Object 
-      uses: actions/upload-artifact@v3
-      with:
-        name: SOFAlizer~
-        path: SOFAlizer~
-
+          msystem: ${{matrix.sys}}
+      - name: Download PureData
+        run: choco install puredata --yes
+      - if: runner.os == 'Windows'
+        name: Build
+        shell: msys2 {0}
+        run: cmake . -B build && cmake --build build
+      - if: runner.os == 'Windows'
+        name: Create Object Folder
+        shell: msys2 {0}
+        run: |
+          mkdir SOFAlizer~
+          cp SOFAlizer~.m_amd64 SOFAlizer~
+          cp *.pd SOFAlizer~
+        continue-on-error: true
+      - name: Upload Object
+        uses: actions/upload-artifact@v3
+        with:
+          name: SOFAlizer~
+          path: SOFAlizer~
   # ======================================================
   macos-build:
     runs-on: macos-latest
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-        fetch-depth: 0
-
-    - name: Install PureData
-      run: |
-        brew install --cask pd
-        brew install cunit
-
-    - name: Build
-      run: | 
-        make extension=d_amd64
-        make extension=d_amd64 localdep_macos
-
-    - name: Create Object Folder
-      run: |
-        mkdir SOFAlizer~
-        cp SOFAlizer~.d_amd64 SOFAlizer~
-        cp -r amd64 SOFAlizer~/amd64
-
-    - name: Upload Object
-      uses: actions/upload-artifact@v3
-      with:
-        name: SOFAlizer~
-        path: SOFAlizer~
-
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Install PureData
+        run: |
+          brew install --cask pd
+          brew install cunit
+      - name: Build
+        run: cmake . -B build && cmake --build build
+      - name: Create Object Folder
+        run: |
+          mkdir SOFAlizer~
+          cp SOFAlizer~.d_amd64 SOFAlizer~
+      - name: Upload Object
+        uses: actions/upload-artifact@v3
+        with:
+          name: SOFAlizer~
+          path: SOFAlizer~
   # ======================================================
   linux-build:
     runs-on: ubuntu-latest
@@ -89,31 +74,22 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-  
       - name: Install PureData
         run: |
           sudo add-apt-repository ppa:pure-data/pure-data
           sudo apt update
           sudo apt install puredata -y
           sudo apt install libcunit1 libcunit1-dev
-
       - name: Build
-        run: |
-          make extension=l_amd64 
-          python resources/localdeps/localdeps.py -o SOFAlizer\~.l_amd64 -i ./libmysofa/build/src
-          
+        run: cmake . -B build && cmake --build build
       - name: Create Object Folder
         run: |
           mkdir SOFAlizer~
           cp -r resources SOFAlizer~
           cp -r src SOFAlizer~
-          cp -r amd64 SOFAlizer~
-          cp SOFAlizer~-help.pd SOFAlizer~
           cp SOFAlizer~.l_amd64 SOFAlizer~
-
       - name: Upload Object
         uses: actions/upload-artifact@v3
         with:
           name: SOFAlizer~
           path: SOFAlizer~
-
